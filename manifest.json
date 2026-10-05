@@ -4,12 +4,13 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#007AFF",
   "icons": [
     {
-      "src": "https://via.placeholder.com/512",
+      "src": "https://cdn-icons-png.flaticon.com/512/2845/2845536.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
