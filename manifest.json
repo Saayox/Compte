@@ -8,16 +8,16 @@
   "theme_color": "#007AFF",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/action/account_balance/2x/baseline_account_balance_black_48dp.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
+      "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/action/account_balance_wallet/2x/baseline_account_balance_wallet_black_48dp.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
