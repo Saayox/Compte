@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Mes Comptes</title>
+
+  <!-- Meta pour Android & Chrome PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#007AFF" id="themeColorMeta">
+
+  <!-- Configuration Web App Manifest inline pour Android -->
+  <link rel="manifest" href='data:application/manifest+json,{
+    "name": "Mes Comptes",
+    "short_name": "Comptes",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#F2F2F7",
+    "theme_color": "#007AFF",
+    "icons": [{
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }]
+  }'>
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const swCode = `
+          const CACHE_NAME = 'comptes-android-v8';
+          self.addEventListener('install', (e) => {
+            e.waitUntil(
+              caches.open(CACHE_NAME).then((cache) => cache.addAll(['./']))
+            );
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(
+              caches.keys().then((keys) =>
+                Promise.all(keys.map((k) => k !== CACHE_NAME && caches.delete(k)))
+              )
+            );
+            self.clients.claim();
+          });
+          self.addEventListener('fetch', (e) => {
+            e.respondWith(
+              caches.match(e.request).then((res) => res || fetch(e.request).catch(() => caches.match('./')))
+            );
+          });
+        `;
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+      });
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #F8F9FA;
+      --card: #FFFFFF;
+      --text: #1F1F1F;
+      --subtext: #757575;
+      --accent: #007AFF;
+      --red: #D32F2F;
+      --green: #2E7D32;
+      --border: #E0E0E0;
+      --input-bg: #F1F3F4;
+      --header-bg: #FFFFFF;
+      --header-text: #1F1F1F;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --card: #1E1E1E;
+        --text: #E0E0E0;
+        --subtext: #9E9E9E;
+        --accent: #42A5F5;
+        --red: #EF5350;
+        --green: #66BB6A;
+        --border: #2C2C2C;
+        --input-bg: #2A2A2A;
+        --header-bg: #1E1E1E;
+        --header-text: #FFFFFF;
+      }
+    }
+
+    [data-theme="dark"] {
+      --bg: #121212;
+      --card: #1E1E1E;
+      --text: #E0E0E0;
+      --subtext: #9E9E9E;
+      --accent: #42A5F5;
+      --red: #EF5350;
+      --green: #66BB6A;
+      --border: #2C2C2C;
+      --input-bg: #2A2A2A;
+      --header-bg: #1E1E1E;
+      --header-text: #FFFFFF;
+    }
+
+    [data-theme="light"] {
+      --bg: #F8F9FA;
+      --card: #FFFFFF;
+      --text: #1F1F1F;
+      --subtext: #757575;
+      --accent: #007AFF;
+      --red: #D32F2F;
+      --green: #2E7D32;
+      --border: #E0E0E0;
+      --input-bg: #F1F3F4;
+      --header-bg: #FFFFFF;
+      --header-text: #1F1F1F;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, select, button {
+      -webkit-user-select: auto;
+      user-select: auto;
+    }
+
+    body {
+      font-family: Roboto, "Segoe UI", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0 12px 80px 12px;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: var(--header-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      margin-left: -12px;
+      margin-right: -12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 { font-size: 18px; font-weight: 700; margin: 0; color: var(--header-text); }
+
+    .btn-small {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-small:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .card {
+      background-color: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .balance-box { text-align: center; padding: 10px; }
+    .balance-title { font-size: 11px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.5px; }
+    .balance-amount { font-size: 28px; font-weight: 700; margin-top: 2px; }
+    .balance-amount.positive { color: var(--green); }
+    .balance-amount.negative { color: var(--red); }
+
+    /* MENU BUDGET COMPACT */
+    .budget-panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+
+    .budget-panel.active { display: block; }
+
+    .budget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .budget-title {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .budget-toggle-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .budget-config {
+      display: none;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .budget-config.show {
+      display: flex;
+    }
+
+    .input-group { margin-bottom: 8px; flex: 1; }
+    label { display: block; font-size: 10px; color: var(--subtext); margin-bottom: 2px; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    .budget-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .budget-row:last-child { border-bottom: none; }
+
+    .budget-row input[type="date"] {
+      width: 110px;
+      font-size: 11px;
+      padding: 4px;
+    }
+
+    .budget-metrics {
+      display: flex;
+      flex: 1;
+      gap: 4px;
+    }
+
+    .metric-box {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 4px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 8px;
+      color: var(--subtext);
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .type-selector {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .type-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .type-btn.active.expense { background: var(--red); color: white; border-color: var(--red); }
+    .type-btn.active.income { background: var(--green); color: white; border-color: var(--green); }
+
+    button.primary {
+      width: 100%;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.success {
+      background-color: var(--green);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .tx-list { margin-top: 8px; }
+    .tx-list.collapsed { display: none; }
+
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--border);
+      border-radius: 6px;
+      touch-action: manipulation;
+    }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-item:active { background: var(--input-bg); }
+
+    .tx-name { font-weight: 600; font-size: 13px; }
+    .tx-date { font-size: 10px; color: var(--subtext); }
+    .tx-note { font-size: 11px; color: var(--subtext); font-style: italic; margin-top: 2px; }
+    .tx-amount { font-weight: 600; font-size: 13px; }
+    .tx-amount.expense { color: var(--red); }
+    .tx-amount.income { color: var(--green); }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--subtext);
+      font-size: 16px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .master-total-box {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* MODAL DE MODIFICATION */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1999;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal-title { font-weight: 700; font-size: 15px; margin-bottom: 12px; }
+    .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
+
+    nav.tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+    }
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--subtext);
+      font-size: 11px;
+      cursor: pointer;
+      flex: 1;
+      padding: 6px 0;
+    }
+
+    .tab-item.active { color: var(--accent); font-weight: 600; }
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+
+    #installAppBtn {
+      display: none;
+      margin-bottom: 12px;
+      width: 100%;
+      background: #34A853;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <button class="btn-small" id="undoBtn" onclick="undoLastAction()" disabled>↩️</button>
+      <h1>Mes Comptes</h1>
+    </div>
+    <div>
+      <button class="btn-small" onclick="toggleBudget()">📊 Budget</button>
+      <button class="btn-small" onclick="toggleTheme()">🌙</button>
+    </div>
+  </header>
+
+  <!-- Bouton d'installation PWA spécifique Android -->
+  <button id="installAppBtn" class="primary" onclick="installPWA()">📲 Installer l'application Android</button>
+
+  <!-- Panneau Budget Ultra Compact -->
+  <div id="budgetPanel" class="budget-panel">
+    <div class="budget-header">
+      <div class="budget-title">📊 Planification Budget</div>
+      <button class="budget-toggle-btn" onclick="toggleBudgetConfig()">⚙️️ Paramètres</button>
+    </div>
+    
+    <div id="budgetConfig" class="budget-config">
+      <div class="input-group">
+        <label>Solde référence (€)</label>
+        <input type="number" id="budgetSolde" placeholder="1000" oninput="calcCascade()">
+      </div>
+      <div class="input-group">
+        <label>Budget / sem (€)</label>
+        <input type="number" id="weeklyBudget" placeholder="150" oninput="calcCascade()">
+      </div>
+    </div>
+
+    <!-- Lignes compactes -->
+    <div class="budget-row">
+      <input type="date" id="dateS1" onchange="saveDates()">
+      <div class="budget-metrics">
+        <div class="metric-box">
+          <div class="metric-label">Argent restant</div>
+          <div class="metric-value" id="resS1" style="color:var(--accent);">0.00 €</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Reste à dépenser</div>
+          <div class="metric-value" id="diffS1">0.00 €</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="budget-row">
+      <input type="date" id="dateS2" onchange="saveDates()">
+      <div class="budget-metrics">
+        <div class="metric-box">
+          <div class="metric-label">Argent restant</div>
+          <div class="metric-value" id="resS2" style="color:var(--accent);">0.00 €</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Reste à dépenser</div>
+          <div class="metric-value" id="diffS2">0.00 €</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="budget-row">
+      <input type="date" id="dateS3" onchange="saveDates()">
+      <div class="budget-metrics">
+        <div class="metric-box">
+          <div class="metric-label">Argent restant</div>
+          <div class="metric-value" id="resS3" style="color:var(--accent);">0.00 €</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Reste à dépenser</div>
+          <div class="metric-value" id="diffS3">0.00 €</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="budget-row">
+      <input type="date" id="dateS4" onchange="saveDates()">
+      <div class="budget-metrics">
+        <div class="metric-box">
+          <div class="metric-label">Argent restant</div>
+          <div class="metric-value" id="resS4" style="color:var(--accent);">0.00 €</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Reste à dépenser</div>
+          <div class="metric-value" id="diffS4">0.00 €</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONGLET 1 : ACCUEIL -->
+  <div id="tab1" class="tab-page active">
+    
+    <div class="card balance-box">
+      <div class="balance-title">Solde Réel Estimé</div>
+      <div id="realBalance" class="balance-amount">0.00 €</div>
+    </div>
+
+    <div class="card">
+      <div class="input-group" style="margin-bottom:0;">
+        <label>Solde actuel de ta banque (€)</label>
+        <input type="number" id="bankBalance" step="0.01" placeholder="Ex: 1250.50" onfocus="pushHistoryState()" oninput="updateAll()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight: 600; font-size:13px; margin-bottom: 8px;">Ajouter une opération ponctuelle</div>
+      
+      <div class="type-selector">
+        <div id="btnExpense" class="type-btn active expense" onclick="setType('expense')">Dépense (-)</div>
+        <div id="btnIncome" class="type-btn income" onclick="setType('income')">Remboursement (+)</div>
+      </div>
+
+      <div style="display:flex; gap:6px;">
+        <div class="input-group">
+          <label>Nom</label>
+          <input type="text" id="txName" placeholder="Courses...">
+        </div>
+        <div class="input-group">
+          <label>Montant (€)</label>
+          <input type="number" id="txAmount" step="0.01" placeholder="45.90">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:6px;">
+        <div class="input-group">
+          <label>Date</label>
+          <input type="date" id="txDate">
+        </div>
+        <div class="input-group">
+          <label>Heure</label>
+          <input type="time" id="txTime">
+        </div>
+      </div>
+      <button class="primary" onclick="addTransaction()">Ajouter</button>
+    </div>
+
+    <!-- LISTE 1 : Opérations ponctuelles en attente -->
+    <div class="card">
+      <div class="section-header" onclick="toggleCollapse('txList')">
+        <span>Paiements & Rentrées en attente</span>
+        <span id="txListArrow">▼</span>
+      </div>
+      <div id="txList" class="tx-list"></div>
+    </div>
+
+    <!-- LISTE 2 : Charges Fixes du mois (Injectées) -->
+    <div class="card">
+      <div class="section-header" onclick="toggleCollapse('fixedMonthList')">
+        <span>Charges Fixes du mois</span>
+        <span id="fixedMonthListArrow">▼</span>
+      </div>
+      <div id="fixedMonthList" class="tx-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ONGLET 2 : MODÈLES DE CHARGES FIXES -->
+  <div id="tab2" class="tab-page">
+    
+    <div class="card">
+      <button class="primary success" style="margin-bottom: 8px; font-size: 14px; padding: 12px;" onclick="injectFixedChargesToMonth()">
+        🚀 Injecter dans l'accueil
+      </button>
+      <div style="font-size: 11px; color: var(--subtext); text-align: center;">
+        Copie vos modèles récurrents dans la section « Charges Fixes du mois » de l'accueil.
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight: 600; font-size:13px; margin-bottom: 8px;">Créer un modèle récurrent</div>
+      
+      <div class="type-selector">
+        <div id="btnFixExpense" class="type-btn active expense" onclick="setFixType('expense')">Prélèvement (-)</div>
+        <div id="btnFixIncome" class="type-btn income" onclick="setFixType('income')">Rentrée / Remboursement (+)</div>
+      </div>
+
+      <div class="input-group">
+        <label>Nom de la charge / rentrée</label>
+        <input type="text" id="fixName" placeholder="Ex: Loyer, Salaire, CAF...">
+      </div>
+      <div style="display:flex; gap:6px;">
+        <div class="input-group">
+          <label>Montant (€)</label>
+          <input type="number" id="fixAmount" step="0.01" placeholder="600">
+        </div>
+        <div class="input-group">
+          <label>Jour du mois (1 à 31)</label>
+          <input type="number" id="fixDay" min="1" max="31" placeholder="5">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Note (optionnel)</label>
+        <input type="text" id="fixNote" placeholder="Ex: Contrat #1234">
+      </div>
+      <button class="primary" onclick="addFixedCharge()">Enregistrer le Modèle</button>
+    </div>
+
+    <div class="card">
+      <div style="font-weight: 600; font-size:13px; margin-bottom: 8px;">Catalogue des Modèles Fixes</div>
+      <div id="fixedMasterList"></div>
+      
+      <!-- Affichage du total des modèles fixes -->
+      <div class="master-total-box">
+        <span>Total mensuel estimé :</span>
+        <span id="masterTotalVal">0.00 €</span>
+      </div>
+    </div>
+
+    <div class="card" style="text-align: center;">
+      <div style="font-size: 11px; color: var(--subtext); margin-bottom: 8px;">Sauvegarde de vos données</div>
+      <button class="btn-small" onclick="exportData()">💾 Sauvegarder</button>
+      <button class="btn-small" onclick="importData()">📂 Restaurer</button>
+      <input type="file" id="importFile" style="display:none" onchange="processImport(event)">
+    </div>
+
+  </div>
+
+  <!-- MODAL DE MODIFICATION -->
+  <div id="editModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">Modifier l'élément</div>
+
+      <div class="type-selector" id="editTypeGroup">
+        <div id="btnEditExpense" class="type-btn expense" onclick="setEditType('expense')">Débit (-)</div>
+        <div id="btnEditIncome" class="type-btn income" onclick="setEditType('income')">Crédit (+)</div>
+      </div>
+
+      <div class="input-group">
+        <label>Nom</label>
+        <input type="text" id="editName">
+      </div>
+      <div class="input-group">
+        <label>Montant (€)</label>
+        <input type="number" id="editAmount" step="0.01">
+      </div>
+      <div style="display:flex; gap:6px;" id="editDateGroup">
+        <div class="input-group">
+          <label id="editDateLabel">Date</label>
+          <input type="date" id="editDate">
+        </div>
+        <div class="input-group" id="editTimeBox">
+          <label>Heure</label>
+          <input type="time" id="editTime">
+        </div>
+      </div>
+      <div class="input-group" id="editNoteBox" style="display:none;">
+        <label>Note (optionnel)</label>
+        <input type="text" id="editNote">
+      </div>
+      <div class="modal-btns">
+        <button class="btn-small" style="flex:1;" onclick="closeModal()">Annuler</button>
+        <button class="primary" style="flex:1;" onclick="saveModalEdit()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV BAR -->
+  <nav class="tab-bar">
+    <div class="tab-item active" onclick="switchTab(1)">
+      <span>🏠 Accueil</span>
+    </div>
+    <div class="tab-item" onclick="switchTab(2)">
+      <span>🔄 Modèles Fixes</span>
+    </div>
+  </nav>
+
+  <script>
+    let currentType = 'expense';
+    let currentFixType = 'expense';
+    let modalEditType = 'expense';
+    let currentRealBalance = 0;
+    let editingIndex = -1;
+    let editingType = '';
+
+    let historyStack = [];
+    let deferredPrompt = null;
+
+    // Gestion installation PWA Android
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installAppBtn').style.display = 'block';
+    });
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+          document.getElementById('installAppBtn').style.display = 'none';
+        });
+      }
+    }
+
+    // Gestion du bouton retour Android
+    window.addEventListener('popstate', (e) => {
+      const modal = document.getElementById('editModal');
+      if (modal.classList.contains('active')) {
+        closeModal();
+      } else {
+        switchTab(1);
+      }
+    });
+
+    // DONNÉES SÉPARÉES
+    let transactions = JSON.parse(localStorage.getItem('my_tx')) || [];
+    let currentMonthFixed = JSON.parse(localStorage.getItem('my_month_fixed')) || [];
+    let fixedCharges = JSON.parse(localStorage.getItem('my_fixed')) || [];
+    let bankBalance = localStorage.getItem('my_bank') || '';
+    let theme = localStorage.getItem('my_theme') || 'auto';
+
+    function setNowDateTime() {
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      
+      document.getElementById('txDate').value = dateStr;
+      document.getElementById('txTime').value = `${hours}:${minutes}`;
+    }
+
+    setNowDateTime();
+
+    if (theme !== 'auto') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    if (bankBalance) document.getElementById('bankBalance').value = bankBalance;
+
+    document.getElementById('budgetSolde').value = localStorage.getItem('bg_solde') || '';
+    document.getElementById('weeklyBudget').value = localStorage.getItem('bg_weekly') || '';
+    document.getElementById('dateS1').value = localStorage.getItem('bg_d1') || '';
+    document.getElementById('dateS2').value = localStorage.getItem('bg_d2') || '';
+    document.getElementById('dateS3').value = localStorage.getItem('bg_d3') || '';
+    document.getElementById('dateS4').value = localStorage.getItem('bg_d4') || '';
+
+    function pushHistoryState() {
+      historyStack.push({
+        transactions: JSON.parse(JSON.stringify(transactions)),
+        currentMonthFixed: JSON.parse(JSON.stringify(currentMonthFixed)),
+        fixedCharges: JSON.parse(JSON.stringify(fixedCharges)),
+        bankBalance: document.getElementById('bankBalance').value
+      });
+      document.getElementById('undoBtn').disabled = false;
+    }
+
+    function undoLastAction() {
+      if (historyStack.length === 0) return;
+      const lastState = historyStack.pop();
+      transactions = lastState.transactions;
+      currentMonthFixed = lastState.currentMonthFixed;
+      fixedCharges = lastState.fixedCharges;
+      document.getElementById('bankBalance').value = lastState.bankBalance;
+      
+      if (historyStack.length === 0) {
+        document.getElementById('undoBtn').disabled = true;
+      }
+      updateAll();
+    }
+
+    function saveState() {
+      localStorage.setItem('my_tx', JSON.stringify(transactions));
+      localStorage.setItem('my_month_fixed', JSON.stringify(currentMonthFixed));
+      localStorage.setItem('my_fixed', JSON.stringify(fixedCharges));
+      localStorage.setItem('my_bank', document.getElementById('bankBalance').value);
+    }
+
+    function saveDates() {
+      localStorage.setItem('bg_d1', document.getElementById('dateS1').value);
+      localStorage.setItem('bg_d2', document.getElementById('dateS2').value);
+      localStorage.setItem('bg_d3', document.getElementById('dateS3').value);
+      localStorage.setItem('bg_d4', document.getElementById('dateS4').value);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      let nextTheme = 'dark';
+      if (current === 'dark') {
+        nextTheme = 'light';
+      }
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('my_theme', nextTheme);
+    }
+
+    function toggleBudget() {
+      document.getElementById('budgetPanel').classList.toggle('active');
+    }
+
+    function toggleBudgetConfig() {
+      document.getElementById('budgetConfig').classList.toggle('show');
+    }
+
+    function setType(type) {
+      currentType = type;
+      document.getElementById('btnExpense').className = 'type-btn ' + (type === 'expense' ? 'active expense' : '');
+      document.getElementById('btnIncome').className = 'type-btn ' + (type === 'income' ? 'active income' : '');
+    }
+
+    function setFixType(type) {
+      currentFixType = type;
+      document.getElementById('btnFixExpense').className = 'type-btn ' + (type === 'expense' ? 'active expense' : '');
+      document.getElementById('btnFixIncome').className = 'type-btn ' + (type === 'income' ? 'active income' : '');
+    }
+
+    function setEditType(type) {
+      modalEditType = type;
+      document.getElementById('btnEditExpense').className = 'type-btn ' + (type === 'expense' ? 'active expense' : '');
+      document.getElementById('btnEditIncome').className = 'type-btn ' + (type === 'income' ? 'active income' : '');
+    }
+
+    function toggleCollapse(id) {
+      const el = document.getElementById(id);
+      const arrow = document.getElementById(id + 'Arrow');
+      el.classList.toggle('collapsed');
+      arrow.innerText = el.classList.contains('collapsed') ? '►' : '▼';
+    }
+
+    function switchTab(num) {
+      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+      document.getElementById('tab' + num).classList.add('active');
+      document.querySelectorAll('.tab-item')[num - 1].classList.add('active');
+    }
+
+    function calcCascade() {
+      const solde = parseFloat(document.getElementById('budgetSolde').value) || 0;
+      const weekly = parseFloat(document.getElementById('weeklyBudget').value) || 0;
+
+      localStorage.setItem('bg_solde', document.getElementById('budgetSolde').value);
+      localStorage.setItem('bg_weekly', document.getElementById('weeklyBudget').value);
+
+      const r1 = solde - weekly;
+      const r2 = r1 - weekly;
+      const r3 = r2 - weekly;
+      const r4 = r3 - weekly;
+
+      document.getElementById('resS1').innerText = r1.toFixed(2) + ' €';
+      document.getElementById('resS2').innerText = r2.toFixed(2) + ' €';
+      document.getElementById('resS3').innerText = r3.toFixed(2) + ' €';
+      document.getElementById('resS4').innerText = r4.toFixed(2) + ' €';
+
+      const d1 = currentRealBalance - r1;
+      const d2 = currentRealBalance - r2;
+      const d3 = currentRealBalance - r3;
+      const d4 = currentRealBalance - r4;
+
+      formatDiff('diffS1', d1);
+      formatDiff('diffS2', d2);
+      formatDiff('diffS3', d3);
+      formatDiff('diffS4', d4);
+    }
+
+    function formatDiff(id, val) {
+      const el = document.getElementById(id);
+      el.innerText = val.toFixed(2) + ' €';
+      el.style.color = val >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+
+    function sortData() {
+      transactions.sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`) - new Date(`${b.date}T${b.time || '00:00'}`));
+      currentMonthFixed.sort((a, b) => new Date(a.date) - new Date(b.date));
+      fixedCharges.sort((a, b) => a.day - b.day);
+    }
+
+    function updateAll() {
+      sortData();
+      const bank = parseFloat(document.getElementById('bankBalance').value) || 0;
+      
+      let txTotal = transactions.reduce((sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0);
+      let fixedTotal = currentMonthFixed.reduce((sum, f) => sum + (f.type === 'expense' ? -f.amount : f.amount), 0);
+
+      currentRealBalance = bank + txTotal + fixedTotal;
+      const el = document.getElementById('realBalance');
+      el.innerText = currentRealBalance.toFixed(2) + ' €';
+      el.className = 'balance-amount ' + (currentRealBalance >= 0 ? 'positive' : 'negative');
+
+      renderLists();
+      saveState();
+      calcCascade();
+    }
+
+    function renderLists() {
+      const txEl = document.getElementById('txList');
+      txEl.innerHTML = transactions.length === 0 ? '<div style="color:var(--subtext);font-size:12px;">Aucun paiement en attente</div>' : '';
+      transactions.forEach((t, i) => {
+        const timeDisplay = t.time ? ` à ${t.time}` : '';
+        const isIncome = t.type === 'income';
+        txEl.innerHTML += `
+          <div class="tx-item" id="tx-item-${i}">
+            <div>
+              <div class="tx-name">${t.name}</div>
+              <div class="tx-date">${t.date}${timeDisplay}</div>
+            </div>
+            <div>
+              <span class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}${t.amount.toFixed(2)} €</span>
+              <button class="delete-btn" onclick="removeTx(${i})">✕</button>
+            </div>
+          </div>`;
+      });
+
+      const monthFixEl = document.getElementById('fixedMonthList');
+      monthFixEl.innerHTML = currentMonthFixed.length === 0 ? '<div style="color:var(--subtext);font-size:12px;">Aucune charge fixe ce mois-ci</div>' : '';
+      currentMonthFixed.forEach((f, i) => {
+        const isIncome = f.type === 'income';
+        monthFixEl.innerHTML += `
+          <div class="tx-item" id="mfix-item-${i}">
+            <div>
+              <div class="tx-name">${f.name}</div>
+              <div class="tx-date">${f.date}</div>
+            </div>
+            <div>
+              <span class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}${f.amount.toFixed(2)} €</span>
+              <button class="delete-btn" onclick="removeMonthFix(${i})">✕</button>
+            </div>
+          </div>`;
+      });
+
+      const masterEl = document.getElementById('fixedMasterList');
+      masterEl.innerHTML = fixedCharges.length === 0 ? '<div style="color:var(--subtext);font-size:12px;">Aucun modèle enregistré</div>' : '';
+      
+      let masterTotal = 0;
+      fixedCharges.forEach((f, i) => {
+        const noteDisplay = f.note ? `<div class="tx-note">📝 ${f.note}</div>` : '';
+        const isIncome = f.type === 'income';
+        
+        masterTotal += isIncome ? f.amount : -f.amount;
+
+        masterEl.innerHTML += `
+          <div class="tx-item" id="fix-item-${i}">
+            <div>
+              <strong>${f.name}</strong> (le ${f.day} du mois)
+              ${noteDisplay}
+            </div>
+            <div>
+              <span class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}${f.amount.toFixed(2)} €</span>
+              <button class="delete-btn" onclick="removeMasterFix(${i})">✕</button>
+            </div>
+          </div>`;
+      });
+
+      const masterTotalEl = document.getElementById('masterTotalVal');
+      const isPositive = masterTotal >= 0;
+      masterTotalEl.innerText = `${isPositive ? '+' : ''}${masterTotal.toFixed(2)} €`;
+      masterTotalEl.style.color = isPositive ? 'var(--green)' : 'var(--red)';
+
+      transactions.forEach((_, i) => attachHoldEvent(`tx-item-${i}`, () => openModal('tx', i)));
+      currentMonthFixed.forEach((_, i) => attachHoldEvent(`mfix-item-${i}`, () => openModal('mfix', i)));
+      fixedCharges.forEach((_, i) => attachHoldEvent(`fix-item-${i}`, () => openModal('masterFix', i)));
+    }
+
+    function injectFixedChargesToMonth() {
+      if (fixedCharges.length === 0) {
+        alert("Vous n'avez aucun modèle de charge fixe enregistré.");
+        return;
+      }
+
+      pushHistoryState();
+
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+
+      currentMonthFixed = fixedCharges.map(f => {
+        const dayStr = String(f.day).padStart(2, '0');
+        return {
+          name: f.name,
+          amount: f.amount,
+          date: `${year}-${month}-${dayStr}`,
+          type: f.type || 'expense'
+        };
+      });
+
+      updateAll();
+      switchTab(1);
+    }
+
+    // Vibration haptique Android améliorée
+    function attachHoldEvent(elementId, callback) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      let timer = null;
+
+      const handleHold = (e) => {
+        if (e.type === 'contextmenu') e.preventDefault();
+        timer = setTimeout(() => {
+          if ('vibrate' in navigator) {
+            navigator.vibrate(60);
+          }
+          callback();
+        }, 450);
+      };
+
+      const clearHold = () => {
+        if (timer) clearTimeout(timer);
+      };
+
+      el.addEventListener('touchstart', handleHold, { passive: true });
+      el.addEventListener('touchend', clearHold);
+      el.addEventListener('touchmove', clearHold);
+      el.addEventListener('mousedown', handleHold);
+      el.addEventListener('mouseup', clearHold);
+      el.addEventListener('mouseleave', clearHold);
+      el.addEventListener('contextmenu', (e) => { e.preventDefault(); callback(); });
+    }
+
+    function openModal(type, index) {
+      editingType = type;
+      editingIndex = index;
+
+      window.history.pushState({ modal: true }, "");
+
+      const dateInput = document.getElementById('editDate');
+      const dateLabel = document.getElementById('editDateLabel');
+      const timeBox = document.getElementById('editTimeBox');
+      const noteBox = document.getElementById('editNoteBox');
+
+      if (type === 'tx') {
+        const t = transactions[index];
+        setEditType(t.type || 'expense');
+        document.getElementById('editName').value = t.name;
+        document.getElementById('editAmount').value = t.amount;
+        dateLabel.innerText = "Date";
+        dateInput.type = "date";
+        dateInput.value = t.date;
+        timeBox.style.display = "block";
+        document.getElementById('editTime').value = t.time || "12:00";
+        noteBox.style.display = "none";
+      } else if (type === 'mfix') {
+        const f = currentMonthFixed[index];
+        setEditType(f.type || 'expense');
+        document.getElementById('editName').value = f.name;
+        document.getElementById('editAmount').value = f.amount;
+        dateLabel.innerText = "Date de prélèvement";
+        dateInput.type = "date";
+        dateInput.value = f.date;
+        timeBox.style.display = "none";
+        noteBox.style.display = "none";
+      } else {
+        const f = fixedCharges[index];
+        setEditType(f.type || 'expense');
+        document.getElementById('editName').value = f.name;
+        document.getElementById('editAmount').value = f.amount;
+        dateLabel.innerText = "Jour du mois (1 à 31)";
+        dateInput.type = "number";
+        dateInput.value = f.day;
+        timeBox.style.display = "none";
+        noteBox.style.display = "block";
+        document.getElementById('editNote').value = f.note || "";
+      }
+
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').classList.remove('active');
+    }
+
+    function saveModalEdit() {
+      pushHistoryState();
+
+      const newName = document.getElementById('editName').value.trim();
+      const newAmount = parseFloat(document.getElementById('editAmount').value);
+      const dateVal = document.getElementById('editDate').value;
+
+      if (!newName || isNaN(newAmount)) return;
+
+      if (editingType === 'tx') {
+        if (dateVal) transactions[editingIndex].date = dateVal;
+        transactions[editingIndex].time = document.getElementById('editTime').value;
+        transactions[editingIndex].name = newName;
+        transactions[editingIndex].amount = newAmount;
+        transactions[editingIndex].type = modalEditType;
+      } else if (editingType === 'mfix') {
+        if (dateVal) currentMonthFixed[editingIndex].date = dateVal;
+        currentMonthFixed[editingIndex].name = newName;
+        currentMonthFixed[editingIndex].amount = newAmount;
+        currentMonthFixed[editingIndex].type = modalEditType;
+      } else {
+        const dayVal = parseInt(dateVal);
+        if (!isNaN(dayVal) && dayVal >= 1 && dayVal <= 31) {
+          fixedCharges[editingIndex].day = dayVal;
+        }
+        fixedCharges[editingIndex].name = newName;
+        fixedCharges[editingIndex].amount = newAmount;
+        fixedCharges[editingIndex].type = modalEditType;
+        fixedCharges[editingIndex].note = document.getElementById('editNote').value.trim();
+      }
+
+      closeModal();
+      updateAll();
+    }
+
+    function addTransaction() {
+      const name = document.getElementById('txName').value.trim();
+      const amount = parseFloat(document.getElementById('txAmount').value);
+      const date = document.getElementById('txDate').value;
+      const time = document.getElementById('txTime').value;
+
+      if (!name || isNaN(amount) || !date) return;
+
+      pushHistoryState();
+
+      transactions.push({ name, amount, date, time, type: currentType });
+      document.getElementById('txName').value = '';
+      document.getElementById('txAmount').value = '';
+      setNowDateTime();
+      updateAll();
+    }
+
+    function addFixedCharge() {
+      const name = document.getElementById('fixName').value.trim();
+      const amount = parseFloat(document.getElementById('fixAmount').value);
+      const day = parseInt(document.getElementById('fixDay').value);
+      const note = document.getElementById('fixNote').value.trim();
+
+      if (!name || isNaN(amount) || isNaN(day)) return;
+
+      pushHistoryState();
+
+      fixedCharges.push({ name, amount, day, note, type: currentFixType });
+      document.getElementById('fixName').value = '';
+      document.getElementById('fixAmount').value = '';
+      document.getElementById('fixDay').value = '';
+      document.getElementById('fixNote').value = '';
+      updateAll();
+    }
+
+    function removeTx(i) {
+      pushHistoryState();
+      transactions.splice(i, 1);
+      updateAll();
+    }
+
+    function removeMonthFix(i) {
+      pushHistoryState();
+      currentMonthFixed.splice(i, 1);
+      updateAll();
+    }
+
+    function removeMasterFix(i) {
+      pushHistoryState();
+      fixedCharges.splice(i, 1);
+      updateAll();
+    }
+
+    function exportData() {
+      const data = JSON.stringify({ transactions, currentMonthFixed, fixedCharges, bankBalance: document.getElementById('bankBalance').value });
+      const blob = new Blob([data], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Comptes_Sauvegarde.json`;
+      a.click();
+    }
+
+    function importData() { document.getElementById('importFile').click(); }
+    function processImport(e) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        pushHistoryState();
+        const data = JSON.parse(evt.target.result);
+        if (data.transactions) transactions = data.transactions;
+        if (data.currentMonthFixed) currentMonthFixed = data.currentMonthFixed;
+        if (data.fixedCharges) fixedCharges = data.fixedCharges;
+        if (data.bankBalance) document.getElementById('bankBalance').value = data.bankBalance;
+        updateAll();
+      };
+      reader.readAsText(e.target.files[0]);
+    }
+
+    updateAll();
+  </script>
+</body>
+</html>
