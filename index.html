@@ -5,24 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Mes Comptes</title>
 
+  <!-- Lien vers le fichier Web App Manifest externe -->
+  <link rel="manifest" href="manifest.json">
+
   <!-- Meta pour Android & Chrome PWA -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#007AFF" id="themeColorMeta">
-
-  <!-- Configuration Web App Manifest inline pour Android -->
-  <link rel="manifest" href='data:application/manifest+json,{
-    "name": "Mes Comptes",
-    "short_name": "Comptes",
-    "start_url": "./",
-    "display": "standalone",
-    "background_color": "#F2F2F7",
-    "theme_color": "#007AFF",
-    "icons": [{
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml"
-    }]
-  }'>
 
   <!-- Service Worker -->
   <script>
@@ -417,7 +405,7 @@
       background: var(--card);
       border-top: 1px solid var(--border);
       display: flex;
-      justify-content: space-around;
+      justify-style: space-around;
       align-items: center;
       z-index: 1000;
       box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
@@ -466,7 +454,7 @@
   <div id="budgetPanel" class="budget-panel">
     <div class="budget-header">
       <div class="budget-title">📊 Planification Budget</div>
-      <button class="budget-toggle-btn" onclick="toggleBudgetConfig()">⚙️️ Paramètres</button>
+      <button class="budget-toggle-btn" onclick="toggleBudgetConfig()">⚙ Paramètres</button>
     </div>
     
     <div id="budgetConfig" class="budget-config">
