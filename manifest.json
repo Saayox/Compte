@@ -8,13 +8,13 @@
   "theme_color": "#007AFF",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Commons_logo_192px.png/192px-Commons_logo_192px.png",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBbfEVYdFNvZnR3YXJlAEFkb2JlIEltYWdlUmVhZHm3U1DAAAAASUlEQVR42u3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICXAAMUAAGR29smAAAAAElFTkSuQmCC",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2845/2845536.png",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAICCAYAAACm5s33AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABBbfEVYdFNvZnR3YXJlAEFkb2JlIEltYWdlUmVhZHm3U1DAAAAASUlEQVR42u3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICXAAMUAAGR29smAAAAAElFTkSuQmCC",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
